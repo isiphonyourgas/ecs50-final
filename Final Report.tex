@@ -24,9 +24,7 @@ and unoptimized source code files. After compiling maze.c, two
 .s files were made using the -S option for the unoptimized file 
 and the -O3 option for the optimized files. The attached files 
 were titled maze-opt.s for the optimized file and maze-noopt.s 
-for the unoptimized file. One of the key differences that we 
-noticed in the two files were the order of the functions and the 
-number of jumps in the two files.
+for the unoptimized file.
 
 One of the most noteworthy changes in the optimized code is 
 the new ordering. Many of the instructions that follow 
@@ -34,8 +32,7 @@ immediately after another instruction are placed right below it,
 so that the code may run smoothly. The optimized code also 
 combines some functions that were separate in the unoptimized code. 
 Instead of separating the functions, the optimized code reduces 
-the number of jumps. In this regard, the amount of jumps is 
-significantly reduced in the optimized code. The generous use of 
+the number of jumps. The generous use of 
 conditional jumps plays a big part in this. If a jump is not 
 absolutely needed, the code just executes downward, which would not 
 be possible if not for the appropriate ordering. A vast majority of 
@@ -77,7 +74,7 @@ during a straight run while in -O3 we see it more of a function based
 implementation. For example, take the first if statement checking 
 whether or not there is a correct number of arguments. On the 
 unoptimized version, we see that the jump is to occur if it is 
-not equal. However, on the optimized version, we see that it jumps when 
+not equal. However, in the optimized version, we see that it jumps when 
 it is equal to zero. This implementation can either hurt the run-time 
 or help it. In our case it hurts it during {\bf main()} because it is 
 doing an unnecessary jump. However, if we were searching for a very 
@@ -108,38 +105,34 @@ We see that if the last argument (.LC0 and LC1) is put directly into
 the stack in the optimized version while in the unoptimized version, 
 we see that it is first put into EDX and then into the stack. Right 
 there we can see that the optimized version is better. Why is it better? 
-Because it is shorter. That means there are less instructions for 
-the CPU which mean the run-time is faster and still reach the 
+Because it is shorter. That means there are fewer instructions for 
+the CPU, which means the run-time is faster and still reaches the 
 same desired outcome.
 
 In addition to function calls, loops are also handled very differently 
 in the two versions. In the unoptimized version we see that after each 
-iteration of the loop, it jumps back to the top of the loop. In the 
-optimized file, the .L20 function combined code for the .L3 and .L4 
-from the unoptimized code. Instead of separating the functions, the 
-optimized code reduces the number of jumps. .L20 plays a crucial role 
-in making the "for" loop concise. In the unoptimized code, .L4 would 
-be called whenever the "for" loops needed to run. The need for multiple 
-jumps necessitates a counter. In the .L20 function of the optimized code, 
-however, the need for a counter is eliminated since the following code 
-for the "for" loops was merely inserted eight times:
+iteration of the loop, it jumps back to the top of the loop until the
+counter reaches 7. In the optimized file, the .L20 section combined .L3 
+and .L4 from the unoptimized code and repeats it eight times:
 \begin{verbatim}
    movl    %ebx, 8(%esp)
    movl    $11, 4(%esp)
    movl    %eax, (%esp)
    call    fgets
    movl    $7, 8(%esp)
+   ...
 \end{verbatim} 
-This helps the program run faster in two ways. The first way it helps 
-with runtime is that we do not have to check whether a loop has 
-fulfilled its requirement. We can avoid that comparison thus saving 
-CPU time. Also, if we avoid that comparison, there would be no need 
-to jump. In this case, code compactness is sacrificed for speed.
+This helps the program run faster in two ways. The first way it helps is 
+that it no longer needs to check whether a loop has 
+fulfilled its conditions. We can avoid that comparison thus saving 
+CPU time and the time it takes to increment the counter. Second, 
+because the code is merely ``copy-pasted'' eight times, the need for
+jumps is eliminated. In this case, code compactness is sacrificed for speed.
    
 As we traverse the program, we notice another subtlety. Every time 
 we want to make a register 0, the unoptimized code moves 0 into the 
 corresponding register (ie. \verb movl \  \verb $0, \  \verb %eax ).
-The optimized version however, uses a different syntax. The function, 
+The optimized version, however, uses a different syntax. The function, 
 .L8, uses the {\bf xorl} command in the optimized code:
 \begin{verbatim}
   xorl    %eax, %eax
@@ -148,22 +141,22 @@ This command provides a more concise way of using the {\bf movl}
 command since it doesn’t need to initialize the EAX register to 0 
 first. This saves one line of instruction that would have used up space 
 on the stack. The purpose of {\bf xorl} in this program is to initialize 
-the for loop that was written in the maze.c code. {\bf xorl} shared 
+the for loop that was written in the maze.c code. {\bf xorl} shares
 similar properties with .L7 in the unoptimized code, where the EAX register 
 was set to zero so that the recursive section could loop again without 
 carrying values from the previous run. Moving a 0 into a register is 
 considered an integer operation while {\bf xorl} is considered a bitwise 
-operation and since bitwise operations are always faster than integer 
+operation. Since bitwise operations are always faster than integer 
 operations, using {\bf xorl} is more efficient. Overall, the reduction 
 in the number of jumps and the increase in immediate code allows the 
 program to run faster since this process does not need to move throughout 
 the stack as frequently as the unoptimized file.
 
-The reduction of jumps is not the only thing that affects the performance 
+The reduction of jumps is not the only change that affects the performance 
 of the program.  The optimized version also takes advantage of the speed 
-of registers to improve the performance of the program.  In the function 
-{\bf find\_path()}, the unoptimized version, the index and the index2 
-variables are compared from the stack while the optimized version copies 
+of registers to improve the performance of the program.  In the unoptimized
+version of the {\bf find\_path()} function, the index and the index2 
+variables are compared from the stack, while the optimized version copies 
 the values from the stack into the registers.  Although it is an extra 
 instruction, it pays off as the program progresses.  If it fails the first 
 if statement (the compound if statement), it progresses to the second one.  
@@ -172,13 +165,13 @@ it simply uses the copied value in the registers instead of looking at
 the stack again.  Since registers are within the CPU, the access speed 
 to registers are many magnitudes faster the from memory.  With the 
 reduction of accesses to memory, the running time of the program 
-is reduced thus improving the performance of the program further.
+is reduced, thus improving the performance of the program further.
 
 Because the optimized version places arguments to {\bf find\_path()} 
 in registers, it is able to access the 2d array much more efficiently 
 than the unoptimized code. To access a particular portion of the maze array, 
 the computer needs to calculate maze+(index*8+index2). In the unoptimized 
-version, the code appears as such:
+version, the code to do this appears as such:
 \begin{verbatim}
    movl    12(%ebp), %eax
    sall    $3, %eax
@@ -209,20 +202,20 @@ the current register values at the front of the stack frame of the
 calling function. For example, surrounding the recursive calls 
 to {\bf find\_path()} appears the code:
 \begin{verbatim}
- movl %edx, -24(%ebp)
- movl %esi, 8(%esp)
- movl %edi, (%esp)
- call find_path
- movl -28(%ebp), %edx
+  movl %edx, -28(%ebp)
+  movl %esi, 8(%esp)
+  movl %edi, (%esp)
+  call find_path
+  movl -28(%ebp), %edx
 \end{verbatim}
-Here, the compiler put c(EDX) 24 bytes into the stack frame and then 
-put it back into EDX after the find\_path call. The reason for this 
-is to prevent situations such as the subroutine changing the EDX 
-register or malicious leprechaun invasions.
+Here, the compiler put c(EDX) 28 bytes into the stack frame and then 
+put it back into EDX after the {\bf find\_path()} call. The reason for this 
+is to deal with situations where subroutines or malicious leprechauns change 
+the EDX register.
 
 We also observed GCC’s security emphasis in its use of the function 
-{\bf \_\_printf\_chk()} in maze-opt.s in place of the usual {\bf printf()} 
-that the unoptimized version uses. The optimized version uses the 
+{\bf \_\_printf\_chk()} in maze-opt.s in place of {\bf printf()},
+which the unoptimized version uses. The optimized version uses the 
 stack far more than the unoptimized one, so the need to check for 
 stack overflows is more necessary. In particular, the {\bf printf()} 
 function tends to use a tremendous amount of space on the stack, and 
@@ -230,17 +223,18 @@ added on top of the increased stack usage from optimizations such as
 \verb -fcaller-saves , the possibility of a stack overflow is increased. 
 {\bf \_\_printf\_chk()} partially solves this problem by  checking the size 
 of the stack prior to doing any stack-heavy calculations. Naturally, 
-this extra action of checking the stack translates to slower performance, 
-which illustrates how GCC does not focus entirely on the speed of the program.
+the extra action of checking the stack translates to slower performance. 
+This illustrates how GCC does not focus entirely on the improving the speed 
+of the program in its optimizations.
 
 Overall, the optimized version of maze.c was efficient, faster, and provided 
 more safety than the unoptimized code. Although the code was longer and 
-initially gave the illusion of a less organized and therefore less efficient 
+initially gave the illusion of a less organized---and therefore less efficient---
 way of decreasing the run-time of the program, the optimized file superseded 
 this notion by providing a different approach to run the program and save memory.
 By changing the order of instructions around significantly, reducing the number of 
 jumps, and dealing with registers directly, the optimized code has traded conciseness 
-for speed. However, when it comes to discovering the leprechaun’s pot of gold at 
+for speed. However, when it comes to discovering the leprechaun's pot of gold at 
 the end of the maze, it is a worthwhile sacrifice. 
 \newpage
 \appendix .
