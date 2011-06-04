@@ -2,6 +2,7 @@
 \usepackage{verbatim}
 \usepackage{appendix}
 \usepackage{fancyvrb}
+\usepackage{relsize}
 \title{The Maze Inside the Machine}
 \author{Aaron Okano, Jason Wong, Meenal Tambe, \\ and Gowtham Vijayaragavan}
 \begin{document}
@@ -237,16 +238,532 @@ more safety than the unoptimized code. Although the code was longer and
 initially gave the illusion of a less organized and therefore less efficient 
 way of decreasing the run-time of the program, the optimized file superseded 
 this notion by providing a different approach to run the program and save memory.
-More broadly, the number of jumps in the functions of the optimized code reduced in comparison to the unoptimized code. This allowed, in some cases, the elimination of a counter, such as the instance with the "for" loop. The optimized code also reduced memory access through the use of registers. Therefore, the optimized code is the most efficient file for maze.c 
+By changing the order of instructions around significantly, reducing the number of 
+jumps, and dealing with registers directly, the optimized code has traded conciseness 
+for speed. However, when it comes to discovering the leprechaun’s pot of gold at 
+the end of the maze, it is a worthwhile sacrifice. 
+\newpage
 \appendix .
 \appendixpage
-\section{Code used in this report}
-\begin{Verbatim}[numbers=left]
-hello
-world!
-\end{Verbatim}
-
-\appendix .
 \section{Contributions}
+\section{Code used in this report}
+{\bf maze.c:}
+\newline
+\begin{Verbatim}[fontsize=\relsize{-2},numbers=left]
+/* 
+ * File:   maze.c
+ * Author: Gowtham
+ *
+ * Created on July 17, 2010, 8:01 PM
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+//The purpose of this program is to scan in a file that has
+//a grid of sorts, X being locations to which you cannot
+//move to. Locations with an O are ok. The sequence of 
+//positions to take to get from (0,1) to (7,7) is
+//printed out. 
+
+void find_path2(char maze[8][8], int index, int index2);
+int find_path(char maze[][8], int index, int index2);
+/*
+ * 
+ */
+int main(int argc, char* argv[]) {
+  FILE *inp;
+  char maze[8][8];
+  int i;
+  if (argc == 2)
+  {
+    inp = fopen(argv[1], "r");
+
+    for (i = 0; i < 8; i++)
+    {
+      fgets(maze[i], 11, inp);
+    } //for
+
+    if (find_path(maze, 7 , 7) == 0)
+      printf("No path was found.");
+    else
+      printf("(7, 7)");
+
+  } //if
+
+
+  return 0;
+
+} //main()
+
+int find_path(char maze[][8], int index, int index2)
+{
+  if (index < 0 || index2 < 0 || index > 7 || index2 > 7)
+  {
+    return 0;
+  } //if
+
+  if (maze[index][index2]== 'X')
+  {
+    return 0;
+
+  } //if
+
+  if (index == 0 && index2 == 1)
+  {
+    return 1;
+  } //if
+
+  maze[index][index2] = 'X';
+
+
+  if (find_path(maze, index, index2 + 1) == 1)
+  {
+    printf("(%d, %d) \n", index, index2 + 1);
+    return 1;
+  } //if
+  if (find_path(maze, index, index2 - 1) == 1)
+  {
+    printf("(%d, %d) \n", index, index2 - 1);
+    return 1;
+  } //if
+  if (find_path(maze, index - 1, index2) == 1)
+  {
+    printf("(%d, %d) \n", index - 1, index2);
+    return 1;
+  } //if
+  if (find_path(maze, index + 1, index2) == 1)
+  {
+    printf("(%d, %d) \n", index + 1, index2);
+    return 1;
+  } //if
+
+
+
+  return 0;
+} //find_path()
+\end{Verbatim}
+\newpage
+{\bf maze-noopt.s:}
+\newline
+\begin{Verbatim}[fontsize=\relsize{-2},numbers=left]
+	.file	"maze.c"
+	.section	.rodata
+.LC0:
+	.string	"r"
+.LC1:
+	.string	"No path was found."
+.LC2:
+	.string	"(7, 7)"
+	.text
+.globl main
+	.type	main, @function
+main:
+	pushl	%ebp
+	movl	%esp, %ebp
+	andl	$-16, %esp
+	subl	$96, %esp
+	cmpl	$2, 8(%ebp)
+	jne	.L2
+	movl	$.LC0, %edx
+	movl	12(%ebp), %eax
+	addl	$4, %eax
+	movl	(%eax), %eax
+	movl	%edx, 4(%esp)
+	movl	%eax, (%esp)
+	call	fopen
+	movl	%eax, 88(%esp)
+	movl	$0, 92(%esp)
+	jmp	.L3
+.L4:
+	leal	24(%esp), %eax
+	movl	92(%esp), %edx
+	sall	$3, %edx
+	leal	(%eax,%edx), %edx
+	movl	88(%esp), %eax
+	movl	%eax, 8(%esp)
+	movl	$11, 4(%esp)
+	movl	%edx, (%esp)
+	call	fgets
+	addl	$1, 92(%esp)
+.L3:
+	cmpl	$7, 92(%esp)
+	jle	.L4
+	movl	$7, 8(%esp)
+	movl	$7, 4(%esp)
+	leal	24(%esp), %eax
+	movl	%eax, (%esp)
+	call	find_path
+	testl	%eax, %eax
+	jne	.L5
+	movl	$.LC1, %eax
+	movl	%eax, (%esp)
+	call	printf
+	jmp	.L2
+.L5:
+	movl	$.LC2, %eax
+	movl	%eax, (%esp)
+	call	printf
+.L2:
+	movl	$0, %eax
+	leave
+	ret
+	.size	main, .-main
+	.section	.rodata
+.LC3:
+	.string	"(%d, %d) \n"
+	.text
+.globl find_path
+	.type	find_path, @function
+find_path:
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$24, %esp
+	cmpl	$0, 12(%ebp)
+	js	.L7
+	cmpl	$0, 16(%ebp)
+	js	.L7
+	cmpl	$7, 12(%ebp)
+	jg	.L7
+	cmpl	$7, 16(%ebp)
+	jle	.L8
+.L7:
+	movl	$0, %eax
+	jmp	.L9
+.L8:
+	movl	12(%ebp), %eax
+	sall	$3, %eax
+	movl	%eax, %edx
+	addl	8(%ebp), %edx
+	movl	16(%ebp), %eax
+	leal	(%edx,%eax), %eax
+	movzbl	(%eax), %eax
+	cmpb	$88, %al
+	jne	.L10
+	movl	$0, %eax
+	jmp	.L9
+.L10:
+	cmpl	$0, 12(%ebp)
+	jne	.L11
+	cmpl	$1, 16(%ebp)
+	jne	.L11
+	movl	$1, %eax
+	jmp	.L9
+.L11:
+	movl	12(%ebp), %eax
+	sall	$3, %eax
+	movl	%eax, %edx
+	addl	8(%ebp), %edx
+	movl	16(%ebp), %eax
+	leal	(%edx,%eax), %eax
+	movb	$88, (%eax)
+	movl	16(%ebp), %eax
+	addl	$1, %eax
+	movl	%eax, 8(%esp)
+	movl	12(%ebp), %eax
+	movl	%eax, 4(%esp)
+	movl	8(%ebp), %eax
+	movl	%eax, (%esp)
+	call	find_path
+	cmpl	$1, %eax
+	jne	.L12
+	movl	16(%ebp), %eax
+	leal	1(%eax), %edx
+	movl	$.LC3, %eax
+	movl	%edx, 8(%esp)
+	movl	12(%ebp), %edx
+	movl	%edx, 4(%esp)
+	movl	%eax, (%esp)
+	call	printf
+	movl	$1, %eax
+	jmp	.L9
+.L12:
+	movl	16(%ebp), %eax
+	subl	$1, %eax
+	movl	%eax, 8(%esp)
+	movl	12(%ebp), %eax
+	movl	%eax, 4(%esp)
+	movl	8(%ebp), %eax
+	movl	%eax, (%esp)
+	call	find_path
+	cmpl	$1, %eax
+	jne	.L13
+	movl	16(%ebp), %eax
+	leal	-1(%eax), %edx
+	movl	$.LC3, %eax
+	movl	%edx, 8(%esp)
+	movl	12(%ebp), %edx
+	movl	%edx, 4(%esp)
+	movl	%eax, (%esp)
+	call	printf
+	movl	$1, %eax
+	jmp	.L9
+.L13:
+	movl	12(%ebp), %eax
+	leal	-1(%eax), %edx
+	movl	16(%ebp), %eax
+	movl	%eax, 8(%esp)
+	movl	%edx, 4(%esp)
+	movl	8(%ebp), %eax
+	movl	%eax, (%esp)
+	call	find_path
+	cmpl	$1, %eax
+	jne	.L14
+	movl	12(%ebp), %eax
+	leal	-1(%eax), %ecx
+	movl	$.LC3, %eax
+	movl	16(%ebp), %edx
+	movl	%edx, 8(%esp)
+	movl	%ecx, 4(%esp)
+	movl	%eax, (%esp)
+	call	printf
+	movl	$1, %eax
+	jmp	.L9
+.L14:
+	movl	12(%ebp), %eax
+	leal	1(%eax), %edx
+	movl	16(%ebp), %eax
+	movl	%eax, 8(%esp)
+	movl	%edx, 4(%esp)
+	movl	8(%ebp), %eax
+	movl	%eax, (%esp)
+	call	find_path
+	cmpl	$1, %eax
+	jne	.L15
+	movl	12(%ebp), %eax
+	leal	1(%eax), %ecx
+	movl	$.LC3, %eax
+	movl	16(%ebp), %edx
+	movl	%edx, 8(%esp)
+	movl	%ecx, 4(%esp)
+	movl	%eax, (%esp)
+	call	printf
+	movl	$1, %eax
+	jmp	.L9
+.L15:
+	movl	$0, %eax
+.L9:
+	leave
+	ret
+	.size	find_path, .-find_path
+	.ident	"GCC: (Ubuntu/Linaro 4.5.2-8ubuntu4) 4.5.2"
+	.section	.note.GNU-stack,"",@progbits
+\end{Verbatim}
+\newpage
+{\bf maze-opt.s:}
+\begin{Verbatim}[fontsize=\relsize{-2},numbers=left]
+	.file	"maze.c"
+	.section	.rodata.str1.1,"aMS",@progbits,1
+.LC0:
+	.string	"(%d, %d) \n"
+	.text
+	.p2align 4,,15
+.globl find_path
+	.type	find_path, @function
+find_path:
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$56, %esp
+	movl	%esi, -8(%ebp)
+	movl	16(%ebp), %esi
+	movl	%ebx, -12(%ebp)
+	movl	12(%ebp), %ebx
+	movl	%edi, -4(%ebp)
+	movl	8(%ebp), %edi
+	testl	%esi, %esi
+	js	.L8
+	movl	%ebx, %eax
+	shrl	$31, %eax
+	testb	%al, %al
+	jne	.L8
+	cmpl	$7, %esi
+	jg	.L8
+	cmpl	$7, %ebx
+	jg	.L8
+	leal	(%edi,%ebx,8), %edx
+	xorl	%eax, %eax
+	cmpb	$88, (%edx,%esi)
+	je	.L2
+	cmpl	$1, %esi
+	jne	.L12
+	testl	%ebx, %ebx
+	movb	$1, %al
+	je	.L2
+.L12:
+	movb	$88, (%edx,%esi)
+	leal	1(%esi), %edx
+	movl	%edx, 8(%esp)
+	movl	%edx, -28(%ebp)
+	movl	%ebx, 4(%esp)
+	movl	%edi, (%esp)
+	call	find_path
+	movl	-28(%ebp), %edx
+	cmpl	$1, %eax
+	je	.L14
+	leal	-1(%esi), %edx
+	movl	%edx, 8(%esp)
+	movl	%edx, -28(%ebp)
+	movl	%ebx, 4(%esp)
+	movl	%edi, (%esp)
+	call	find_path
+	movl	-28(%ebp), %edx
+	cmpl	$1, %eax
+	je	.L14
+	leal	-1(%ebx), %edx
+	movl	%edx, 4(%esp)
+	movl	%edx, -28(%ebp)
+	movl	%esi, 8(%esp)
+	movl	%edi, (%esp)
+	call	find_path
+	movl	-28(%ebp), %edx
+	cmpl	$1, %eax
+	je	.L16
+	addl	$1, %ebx
+	movl	%esi, 8(%esp)
+	movl	%ebx, 4(%esp)
+	movl	%edi, (%esp)
+	call	find_path
+	movl	%eax, %edx
+	xorl	%eax, %eax
+	cmpl	$1, %edx
+	jne	.L2
+	movl	%esi, 12(%esp)
+.L13:
+	movl	%ebx, 8(%esp)
+	movl	$.LC0, 4(%esp)
+	movl	$1, (%esp)
+	call	__printf_chk
+	movl	$1, %eax
+	jmp	.L2
+	.p2align 4,,7
+	.p2align 3
+.L8:
+	xorl	%eax, %eax
+.L2:
+	movl	-12(%ebp), %ebx
+	movl	-8(%ebp), %esi
+	movl	-4(%ebp), %edi
+	movl	%ebp, %esp
+	popl	%ebp
+	ret
+	.p2align 4,,7
+	.p2align 3
+.L14:
+	movl	%edx, 12(%esp)
+	jmp	.L13
+	.p2align 4,,7
+	.p2align 3
+.L16:
+	movl	%esi, 12(%esp)
+	movl	%edx, 8(%esp)
+	movl	$.LC0, 4(%esp)
+	movl	$1, (%esp)
+	call	__printf_chk
+	movl	$1, %eax
+	jmp	.L2
+	.size	find_path, .-find_path
+	.section	.rodata.str1.1
+.LC1:
+	.string	"r"
+.LC2:
+	.string	"No path was found."
+.LC3:
+	.string	"(7, 7)"
+	.text
+	.p2align 4,,15
+.globl main
+	.type	main, @function
+main:
+	pushl	%ebp
+	movl	%esp, %ebp
+	andl	$-16, %esp
+	subl	$96, %esp
+	cmpl	$2, 8(%ebp)
+	movl	%ebx, 88(%esp)
+	movl	%esi, 92(%esp)
+	je	.L20
+.L18:
+	xorl	%eax, %eax
+	movl	88(%esp), %ebx
+	movl	92(%esp), %esi
+	movl	%ebp, %esp
+	popl	%ebp
+	ret
+	.p2align 4,,7
+	.p2align 3
+.L20:
+	movl	12(%ebp), %eax
+	leal	16(%esp), %esi
+	movl	$.LC1, 4(%esp)
+	movl	4(%eax), %eax
+	movl	%eax, (%esp)
+	call	fopen
+	movl	$11, 4(%esp)
+	movl	%esi, (%esp)
+	movl	%eax, %ebx
+	movl	%eax, 8(%esp)
+	call	fgets
+	leal	24(%esp), %eax
+	movl	%ebx, 8(%esp)
+	movl	$11, 4(%esp)
+	movl	%eax, (%esp)
+	call	fgets
+	leal	32(%esp), %eax
+	movl	%ebx, 8(%esp)
+	movl	$11, 4(%esp)
+	movl	%eax, (%esp)
+	call	fgets
+	leal	40(%esp), %eax
+	movl	%ebx, 8(%esp)
+	movl	$11, 4(%esp)
+	movl	%eax, (%esp)
+	call	fgets
+	leal	48(%esp), %eax
+	movl	%ebx, 8(%esp)
+	movl	$11, 4(%esp)
+	movl	%eax, (%esp)
+	call	fgets
+	leal	56(%esp), %eax
+	movl	%ebx, 8(%esp)
+	movl	$11, 4(%esp)
+	movl	%eax, (%esp)
+	call	fgets
+	leal	64(%esp), %eax
+	movl	%ebx, 8(%esp)
+	movl	$11, 4(%esp)
+	movl	%eax, (%esp)
+	call	fgets
+	leal	72(%esp), %eax
+	movl	%ebx, 8(%esp)
+	movl	$11, 4(%esp)
+	movl	%eax, (%esp)
+	call	fgets
+	movl	$7, 8(%esp)
+	movl	$7, 4(%esp)
+	movl	%esi, (%esp)
+	call	find_path
+	testl	%eax, %eax
+	je	.L21
+	movl	$.LC3, 4(%esp)
+	movl	$1, (%esp)
+	call	__printf_chk
+	xorl	%eax, %eax
+	movl	88(%esp), %ebx
+	movl	92(%esp), %esi
+	movl	%ebp, %esp
+	popl	%ebp
+	ret
+	.p2align 4,,7
+	.p2align 3
+.L21:
+	movl	$.LC2, 4(%esp)
+	movl	$1, (%esp)
+	call	__printf_chk
+	jmp	.L18
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu/Linaro 4.5.2-8ubuntu4) 4.5.2"
+	.section	.note.GNU-stack,"",@progbits
+\end{Verbatim}
 \end{document}
 
