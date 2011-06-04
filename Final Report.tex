@@ -14,7 +14,7 @@ In the program, a two-dimensional array was placed into a file.
 An ``O'' indicated an open space while an ``X'' represented a closed 
 portion in the maze. The goal of the program was to find the best 
 possible path to complete the maze. The method for finding the 
-best path was written into the find\_path function, which had 
+best path was written into the {\bf find\_path()} function, which had 
 recursive properties since it only called either itself or the 
 {\bf printf()} function. When running the program, the coordinates 
 for the best path were printed in row-major order. Because of 
@@ -27,7 +27,10 @@ were titled maze-opt.s for the optimized file and maze-noopt.s
 for the unoptimized file.
 
 One of the most noteworthy changes in the optimized code is 
-the new ordering. Many of the instructions that follow 
+the new ordering. 
+
+
+Many of the instructions that follow 
 immediately after another instruction are placed right below it, 
 so that the code may run smoothly. The optimized code also 
 combines some functions that were separate in the unoptimized code. 
@@ -86,22 +89,22 @@ Another subtlety that we found was that the optimized version would push
 things straight into the stack. We can take our example from the time 
 before the {\bf fopen()} call. The unoptimized version has
 \begin{verbatim}
-movl $.LC0, %edx
-movl 12(%ebp), %eax
-addl $4, %eax
-movl (%eax), %eax
-movl %edx, 4(%esp)
-movl %eax, (%esp)
-call fopen
+   movl    $.LC0, %edx
+   movl    12(%ebp), %eax
+   addl    $4, %eax
+   movl    (%eax), %eax
+   movl    %edx, 4(%esp)
+   movl    %eax, (%esp)
+   call    fopen
 \end{verbatim}
 while the optimized version has the following:
 \begin{verbatim}
-movl $.LC1, 4(%esp)
-movl 4(%eax), %eax
-movl %eax, (%esp)
-call fopen
+   movl    $.LC1, 4(%esp)
+   movl    4(%eax), %eax
+   movl    %eax, (%esp)
+   call    fopen
 \end{verbatim}
-We see that if the last argument (.LC0 and LC1) is put directly into 
+We see that the last argument (.LC0 and LC1) is put directly into 
 the stack in the optimized version while in the unoptimized version, 
 we see that it is first put into EDX and then into the stack. Right 
 there we can see that the optimized version is better. Why is it better? 
@@ -115,11 +118,12 @@ iteration of the loop, it jumps back to the top of the loop until the
 counter reaches 7. In the optimized file, the .L20 section combined .L3 
 and .L4 from the unoptimized code and repeats it eight times:
 \begin{verbatim}
+   leal    24(%esp), %eax
    movl    %ebx, 8(%esp)
    movl    $11, 4(%esp)
    movl    %eax, (%esp)
    call    fgets
-   movl    $7, 8(%esp)
+   leal    32(%esp), %eax
    ...
 \end{verbatim} 
 This helps the program run faster in two ways. The first way it helps is 
@@ -135,7 +139,7 @@ corresponding register (ie. \verb movl \  \verb $0, \  \verb %eax ).
 The optimized version, however, uses a different syntax. The function, 
 .L8, uses the {\bf xorl} command in the optimized code:
 \begin{verbatim}
-  xorl    %eax, %eax
+   xorl    %eax, %eax
 \end{verbatim}
 This command provides a more concise way of using the {\bf movl} 
 command since it doesn’t need to initialize the EAX register to 0 
@@ -202,11 +206,11 @@ the current register values at the front of the stack frame of the
 calling function. For example, surrounding the recursive calls 
 to {\bf find\_path()} appears the code:
 \begin{verbatim}
-  movl %edx, -28(%ebp)
-  movl %esi, 8(%esp)
-  movl %edi, (%esp)
-  call find_path
-  movl -28(%ebp), %edx
+   movl    %edx, -28(%ebp)
+   movl    %esi, 8(%esp)
+   movl    %edi, (%esp)
+   call    find_path
+   movl    -28(%ebp), %edx
 \end{verbatim}
 Here, the compiler put c(EDX) 28 bytes into the stack frame and then 
 put it back into EDX after the {\bf find\_path()} call. The reason for this 
