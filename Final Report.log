@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2011.5.11)  4 JUN 2011 11:06
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2011.5.11)  4 JUN 2011 11:10
 entering extended mode
  %&-line parsing enabled.
 **"Final Report.tex"
@@ -98,12 +98,12 @@ File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 248.
 
-Underfull \hbox (badness 10000) in paragraph at lines 255--257
+Underfull \hbox (badness 10000) in paragraph at lines 269--271
 
  []
 
 [7] [8] [9]
-Underfull \hbox (badness 10000) in paragraph at lines 353--355
+Underfull \hbox (badness 10000) in paragraph at lines 367--369
 
  []
 
@@ -115,7 +115,7 @@ Here is how much of TeX's memory you used:
  4156 multiletter control sequences out of 15000+50000
  7863 words of font info for 29 fonts, out of 3000000 for 9000
  714 hyphenation exceptions out of 8191
- 23i,6n,19p,188b,290s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 23i,6n,19p,166b,290s stack positions out of 5000i,500n,10000p,200000b,50000s
 </usr/share/texmf
 -texlive/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-texlive/fo
 nts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-texlive/fonts/type1/pu
@@ -123,7 +123,7 @@ blic/amsfonts/cm/cmr17.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfont
 s/cm/cmr6.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy10.p
 fb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/sh
 are/texmf-texlive/fonts/type1/public/amsfonts/cm/cmtt8.pfb>
-Output written on "Final Report.pdf" (17 pages, 111946 bytes).
+Output written on "Final Report.pdf" (17 pages, 114011 bytes).
 PDF statistics:
  85 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
