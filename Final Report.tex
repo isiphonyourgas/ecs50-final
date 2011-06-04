@@ -53,9 +53,8 @@ main:
    movl    %esi, 92(%esp)
    je      .L20
 \end{verbatim}
-A jump is made if there are only two arguments. Otherwise, the instruction 
-after {\bf main()}, .L18, which performs necessary stack operations, 
-and returns. It is extremely minimalist, and nothing else is performed 
+A jump is made if there are only two arguments. Otherwise, .L18, the instruction 
+after {\bf main()} which performs necessary stack operations, returns. It is extremely minimalist, and nothing else is performed 
 unless the condition, that the number of arguments is two, is met.
 
 Additionally, when comparing the two files, an observation we made 
@@ -71,7 +70,7 @@ jumps are made quite frequently from instruction to instruction.
         
 The -O3 modification also makes some other very subtle changes. One of 
 these subtle changes is how if statements are handled. When we look 
-at the unoptimized version, we see that it it writes the function as if 
+at the unoptimized version, we see that it writes the function as if 
 it was building the instructions based on the how the program would be 
 during a straight run while in -O3 we see it more of a function based 
 implementation. For example, take the first if statement checking 
