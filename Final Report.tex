@@ -54,7 +54,8 @@ main:
    je      .L20
 \end{verbatim}
 A jump is made if there are only two arguments. Otherwise, .L18, the instruction 
-after {\bf main()} which performs necessary stack operations, returns. It is extremely minimalist, and nothing else is performed 
+after {\bf main()} which performs necessary stack operations, returns. 
+It is extremely minimalist, and nothing else is performed 
 unless the condition, that the number of arguments is two, is met.
 
 Additionally, when comparing the two files, an observation we made 
@@ -80,9 +81,9 @@ not equal. However, in the optimized version, we see that it jumps when
 it is equal to zero. This implementation can either hurt the run-time 
 or help it. In our case it hurts it during {\bf main()} because it is 
 doing an unnecessary jump. However, if we were searching for a very 
-specific condition such as in our {\bf find\_path()}, looking for 
-something that has a probability of less than one third of happening, 
-then the optimized implementation is superior because it prevents excess jumps.
+specific condition that has little probability of happening, such as
+in {\bf find\_path()}, then the optimized 
+implementation is superior because it prevents excess jumps.
 
 Another subtlety that we found was that the optimized version would push 
 things straight into the stack. We can take our example from the time 
@@ -106,8 +107,8 @@ while the optimized version has the following:
 We see that the last argument (.LC0 and LC1) is put directly into 
 the stack in the optimized version while in the unoptimized version, 
 we see that it is first put into EDX and then into the stack. Right 
-there we can see that the optimized version is better. Why is it better? 
-Because it is shorter. That means there are fewer instructions for 
+there we can see that the optimized version is better because it is
+more direct. That means there are fewer instructions for 
 the CPU, which means the run-time is faster and still reaches the 
 same desired outcome.
 
